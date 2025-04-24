@@ -54,7 +54,7 @@ def validate_totp(request):
         totp_obj = totp.objects.get(user=user)
         generated_totp = pyotp.TOTP(totp_obj.secret)
 
-        if generated_totp.verify(code,valid_window=1):
+        if generated_totp.verify(code,valid_window=0):
             # Here, you can generate a JWT token for the user (token generation not shown)
             return Response({'status': 'success', 'message': 'Authenticated'},status=status.HTTP_200_OK)
         
