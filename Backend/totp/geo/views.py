@@ -2,6 +2,8 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
+
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 import json
 from django.contrib.auth.models import User,Permission
@@ -20,7 +22,7 @@ def generate_secret(request,username,password):
 
         # Generate otpauth:// URL
         generated_totp = pyotp.TOTP(secret)
-        otp_uri = generated_totp.provisioning_uri(name=username, issuer_name="MyApp")
+        otp_uri = generated_totp.provisioning_uri(name=username, issuer_name="Manav Test")
 
         return Response({"secret":secret,"otp_uri":otp_uri},status=status.HTTP_200_OK)
     else:
@@ -55,8 +57,10 @@ def validate_totp(request):
         generated_totp = pyotp.TOTP(totp_obj.secret)
 
         if generated_totp.verify(code,valid_window=0):
-            # Here, you can generate a JWT token for the user (token generation not shown)
-            return Response({'status': 'success', 'message': 'Authenticated'},status=status.HTTP_200_OK)
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+
+            return Response({'Token':access_token,'user':user.username},status= status.HTTP_200_OK)
         
         return Response({'status': 'error', 'message': 'Invalid or expired code'}, status=status.HTTP_403_FORBIDDEN)
     else:
